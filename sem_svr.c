@@ -20,6 +20,7 @@ typedef struct $
     time_t llegada;
     int ocupado;
 } vehiculo;
+
 int NUM=0;
 vehiculo PUESTOS[200];
 
