@@ -5,18 +5,7 @@
         Maria Bracamonte    10-11147
         Nelson Saturno      09-10797
 */
-
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-// Constantes
-#define MAX 80
-#define PORT1 21147
-#define PORT2 20797
-#define SA struct sockaddr
+#include "header.h"
 #define PUERTO "-p"
 #define DIRECCION "-d"
 #define MODO "-c"
@@ -41,23 +30,23 @@ int main(int argc,char *argv[])
     /*
         Revisa los argumentos de entrada y dependiendo del prefijo
         de cada entrada se le asigna el valor a la variable de referencia.
-	 */
-	if(argc!=9)
+     */
+    if(argc!=9)
     {
         perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
         exit(0);
     }
     else
     {
-    	for (i = 1; i < argc - 1; i = i + 2){
-    		if((strncmp(argv[i], PUERTO, 2) == 0)){
+        for (i = 1; i < argc - 1; i = i + 2){
+            if((strncmp(argv[i], PUERTO, 2) == 0)){
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (prt == 1)
                 {
                     perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                     exit(0);
                 }
-    			PORT=atoi(argv[i+1]);
+                PORT=atoi(argv[i+1]);
                 if (PORT != PORT1)
                 {
                     if (PORT != PORT2)
@@ -67,44 +56,44 @@ int main(int argc,char *argv[])
                     }
                 }
                 prt = 1;
-    		}
-    		else if(strncmp(argv[i], DIRECCION, 2) == 0){
+            }
+            else if(strncmp(argv[i], DIRECCION, 2) == 0){
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (host == 1)
                 {
                     perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                     exit(0);
                 }
-    			strcpy(IP,argv[i+1]);
+                strcpy(IP,argv[i+1]);
                 host = 1;
-    		}
-    		else if(strncmp(argv[i], MODO, 2) == 0){
+            }
+            else if(strncmp(argv[i], MODO, 2) == 0){
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (mod == 1)
                 {
                     perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                     exit(0);
                 }
-    			strcpy(MODE,argv[i+1]);
+                strcpy(MODE,argv[i+1]);
                 mod = 1;
-    		}
-    		else if(strncmp(argv[i], PLACA, 2) == 0){
+            }
+            else if(strncmp(argv[i], PLACA, 2) == 0){
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (plac == 1)
                 {
                     perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                     exit(0);
                 }
-    			strcpy(ID,argv[i+1]);
+                strcpy(ID,argv[i+1]);
                 plac = 1;
-    		}
+            }
             else
             {
                 perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                 exit(0);
             }
 
-    	}
+        }
     }
 
     if((sockfd = socket(AF_INET,SOCK_DGRAM,0)) ==-1)
@@ -112,7 +101,6 @@ int main(int argc,char *argv[])
         perror("Fallo en la creación del Socket...\n");
         exit(0);
     }
-    else printf("Socket creado satisfactoriamente!..\n");
 
     wait_time.tv_sec = MAXWAIT;
     wait_time.tv_usec = 0;
@@ -122,28 +110,28 @@ int main(int argc,char *argv[])
        exit(1);
     }
 
-	bzero(&servaddr,sizeof(len));
-	servaddr.sin_family=AF_INET;
-	servaddr.sin_addr.s_addr=inet_addr(IP);
-	servaddr.sin_port=htons(PORT);
-	len=sizeof(servaddr);
+    bzero(&servaddr,sizeof(len));
+    servaddr.sin_family=AF_INET;
+    servaddr.sin_addr.s_addr=inet_addr(IP);
+    servaddr.sin_port=htons(PORT);
+    len=sizeof(servaddr);
 
-	// Se guarda en un buffer la placa del carro para enviarlo al servidor
-	strcpy(buff, ID);
-	strcat(buff," ");
-	strcat(buff, MODE);
-	printf("%s\n",buff);
-	for (j = 0; j < 3; j++)
-	{
-		printf("\n");
-		if ((enviados = sendto(sockfd,buff,sizeof(buff),0,(SA *)&servaddr,len)) == -1)
+    // Se guarda en un buffer la placa del carro para enviarlo al servidor
+    strcpy(buff, ID);
+    strcat(buff," ");
+    strcat(buff, MODE);
+    printf("%s\n",buff);
+    for (j = 0; j < 3; j++)
+    {
+        printf("\n");
+        if ((enviados = sendto(sockfd,buff,sizeof(buff),0,(SA *)&servaddr,len)) == -1)
         {
             perror("No se pudo enviar el mensaje al servidor.\n");
             exit(1);
         }
         printf("Bytes enviados al servidor: %d\n", enviados);
-		bzero(buff,sizeof(buff));
-		if ((recibido = recvfrom(sockfd,buff,sizeof(buff),0,(SA *)&servaddr,&len)) > 0)
+        bzero(buff,sizeof(buff));
+        if ((recibido = recvfrom(sockfd,buff,sizeof(buff),0,(SA *)&servaddr,&len)) > 0)
         {
             strcpy(copy_buff, buff);
             strcpy(resto_buff, strtok(copy_buff, "$"));
@@ -173,12 +161,13 @@ int main(int argc,char *argv[])
         }
         if (j == 2) {
             close(sockfd); // cerramos el socket
-            printf("Número máximo de intentos superados.\n");
+            printf("Tiempo de respuesta agotado.\n");
             exit(1);
         }
         else {
             printf("El servidor no responde, volveremos a intentar.\n");
         }
-	}
-	close(sockfd); // cerramos el socket
+    }
+    close(sockfd); // cerramos el socket
 }
+
