@@ -143,7 +143,7 @@ void escuchar(int sockfd, char *E, char *S)
     			}else{
                     /*Si hay carros en el estacionamiento, verifica que la placa este
                     dentro de los carros ingresados, de ser asi lo elimina del estacionamiento
-                    y calcula el precio a cobrar.De lo contrario no hace la salida, pues no esta 
+                    y calcula el precio a cobrar.De lo contrario no hace la salida, pues no esta
                     dentro del estacionamiento*/
     			    if((salida = fopen(S,"a")) == NULL){
     			      printf("Error en abrir el archivo de salida");
@@ -151,7 +151,7 @@ void escuchar(int sockfd, char *E, char *S)
     			    }
                     pos = eliminar_vehiculo(placa);
                     if (pos != -1)
-                    {   
+                    {
                         NUM--;
                         segundos = difftime(now, PUESTOS[pos].llegada);
                         horas = (int) segundos/3600;
@@ -184,7 +184,7 @@ void escuchar(int sockfd, char *E, char *S)
     			}
     		}
             else
-            {   /*Si quiere entrar debe de haber menos de 200 carros, de ser asi 
+            {   /*Si quiere entrar debe de haber menos de 200 carros, de ser asi
                 verifica si esa placa ingresada esta dentro del estacionamiento, de lo contrario
                 lo ingresa ocupando un lugar en el mismo. */
 
@@ -262,7 +262,7 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (prt == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
                     exit(0);
                 }
     			PORT=atoi(argv[i+1]);
@@ -280,7 +280,7 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (fent == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
                     exit(0);
                 }
     			strcpy(E,argv[i+1]);
@@ -290,16 +290,21 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (fsal == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
                     exit(0);
                 }
     			strcpy(S,argv[i+1]);
                 fsal = 1;
     		}
     		else {
-                perror("Sintaxis: ./sem_cli -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
+                perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
                 exit(0);
-       		 }
+       		}
+            if (strcmp(E,S) == 0)
+            {
+                perror("Los archivos de entrada y salida no pueden llamarse igual");
+                exit(0);
+            }
     	}
     }
 
