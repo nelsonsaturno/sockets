@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-        #include <pthread.h>
 
 // Constantes
 #define MAX 80
@@ -40,18 +39,9 @@ typedef struct $
     int ocupado; // Indicador de puesto, si esta ocupado o no
 } vehiculo;
 
-// estructura para pasar parametros por hilos
-typedef struct
-{
-    int sockfd;
-    char entrada[20];
-    char salida[20];
-} hilos_args;
-
 // Variables Globales
 int NUM = 0; // numero de puestos ocupados en el estacionamiento
 vehiculo PUESTOS[200]; // arreglo de puestos en el estacionamiento
-pthread_t tid[4]; // ID de Hilos, crearemos hasta 4 hilos
 
 /*
     eliminar_vehiculo: funcion que desocupa un puesto del estacionamiento
@@ -249,6 +239,7 @@ void escuchar(int sockfd, char *E, char *S)
                     strcat(BUFFER, bytes);
     				sendto(sockfd,BUFFER,21,0,(SA *)&cli,clen);
     				printf("Estacionamiento lleno");
+
     			}
     		}
         }
@@ -264,37 +255,13 @@ void escuchar(int sockfd, char *E, char *S)
 	}
 }
 
-void* doSomeThing(void* args)
-{
-    pthread_t id = pthread_self();
-
-    hilos_args *actual_args = args;
-
-    if(pthread_equal(id,tid[0]))
-    {
-        escuchar(actual_args->sockfd, actual_args->entrada, actual_args->salida);
-    }
-    else if (pthread_equal(id,tid[1]))
-    {
-        escuchar(actual_args->sockfd, actual_args->entrada, actual_args->salida);
-    }
-    else if (pthread_equal(id,tid[2]))
-    {
-        escuchar(actual_args->sockfd, actual_args->entrada, actual_args->salida);
-    }
-    else if (pthread_equal(id,tid[3]))
-    {
-        escuchar(actual_args->sockfd, actual_args->entrada, actual_args->salida);
-    }
-
-}
 
 int main(int argc,char *argv[])
 {
     char E[20];
     char S[20];
 	int PORT, i;
-    int prt, fent, fsal, err; //flags para verificacion de argumentos
+    int prt, fent, fsal; //flags para verificacion de argumentos
 	/*
        Revisa los argumentos de entrada y dependiendo del prefijo
 	   de cada entrada se le asigna el valor a la variable de referencia.
@@ -374,20 +341,6 @@ int main(int argc,char *argv[])
 	}
 	else printf("Socket enlazado exitósamente!\n");
 
-    i = 0;
-    hilos_args *args = malloc(sizeof *args);
-    args->sockfd = sockfd;
-    strcpy(args->salida, E);
-    strcpy(args->salida, S);
-	while(i < 4)
-    {
-        err = pthread_create(&(tid[i]), NULL, &doSomeThing, args);
-        if (err != 0)
-            printf("\ncan't create thread :[%s]", strerror(err));
-
-        i++;
-    }
-
-    sleep(5);
+	escuchar(sockfd, E,S);
 	close(sockfd);
 }
