@@ -25,6 +25,7 @@ int main(int argc,char *argv[])
     int sockfd, len, i, j, PORT, recibido, enviados, revisar;
     struct sockaddr_in servaddr;
     struct timeval wait_time;
+    struct hostent *he; /* para el nombre del host */
     int prt, host, mod, plac; //flags para verificacion de argumentos
 
     /*
@@ -64,7 +65,10 @@ int main(int argc,char *argv[])
                     perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
                     exit(0);
                 }
-                strcpy(IP,argv[i+1]);
+                if ((he=gethostbyname(argv[i+1])) == NULL) {
+                    perror("Error obteniendo el host a travez del nombre.");
+                    exit(1);
+                }
                 host = 1;
             }
             else if(strncmp(argv[i], MODO, 2) == 0){
@@ -112,7 +116,7 @@ int main(int argc,char *argv[])
 
     bzero(&servaddr,sizeof(len));
     servaddr.sin_family=AF_INET;
-    servaddr.sin_addr.s_addr=inet_addr(IP);
+    servaddr.sin_addr = *((struct in_addr *)he->h_addr);
     servaddr.sin_port=htons(PORT);
     len=sizeof(servaddr);
 
