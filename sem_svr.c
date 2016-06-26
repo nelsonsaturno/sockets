@@ -55,7 +55,12 @@ int eliminar_vehiculo(char *placa)
     {
         if (strcmp(placa, PUESTOS[i].placa) == 0)
         {
-            return i;
+            if (PUESTOS[i].ocupado == 1)
+            {
+                PUESTOS[i].ocupado = 0;
+                return i;
+            }
+
         }
         i = i + 1;
     }
