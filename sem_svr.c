@@ -6,42 +6,14 @@
         Nelson Saturno      09-10797
 */
 
-#include <stdio.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-
-// Constantes
-#define MAX 80
-#define PORT1 21147
-#define PORT2 20797
-#define SA struct sockaddr
 #define PUERTO "-l"
 #define ENTR "-i"
 #define SAL "-o"
-
-/*
-    Estructura que maneja informacion de vehiculo y puesto
-    en el estacionamiento
-*/
-
-typedef struct $
-{
-    char placa[10]; // placa del vehiculo
-    int identificador; // identificador del vehiculo
-    time_t llegada; // fecha y hora de llegada del vehiculo
-    char llegada_str[30]; //fecha y hora de llegada directamente en string
-    int ocupado; // Indicador de puesto, si esta ocupado o no
-} vehiculo;
+#include "header.h"
 
 // Variables Globales
-int NUM = 0; // numero de puestos ocupados en el estacionamiento
-vehiculo PUESTOS[200]; // arreglo de puestos en el estacionamiento
+int NUM = 0;                // numero de puestos ocupados en el estacionamiento
+vehiculo PUESTOS[200];      // arreglo de puestos en el estacionamiento
 
 /*
     eliminar_vehiculo: funcion que desocupa un puesto del estacionamiento
@@ -73,7 +45,7 @@ int eliminar_vehiculo(char *placa)
 */
 
 int agregar_vehiculo(char *placa, time_t llegada, char *llegada_str)
-{
+{   //verifica si se encuentra el carro en el estacionamiento.
     int i = 0;
     while (i < 200)
     {
@@ -87,7 +59,7 @@ int agregar_vehiculo(char *placa, time_t llegada, char *llegada_str)
         i = i + 1;
     }
     i = 0;
-
+    //Si no se encuentra, se agrega el carro
     while(i < 200)
     {
         if (PUESTOS[i].ocupado == 0)
@@ -134,6 +106,7 @@ void escuchar(int sockfd, char *E, char *S)
         if (recibido > 0)
         {
             sprintf(bytes, "%d", recibido);
+            strcat(bytes," ");
             strcat(bytes,"$");
         }
         repite = (int) recibido;
@@ -153,32 +126,33 @@ void escuchar(int sockfd, char *E, char *S)
         now = time(0);
         ts = localtime(&now);
         strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
-        printf("%s\n", HOUR);
-
         strcpy(BUFFER, HOUR);
-        strcat(BUFFER," ");
-        strcat(BUFFER,buff);
-
+        strcat(BUFFER," Placa: ");
+        strcat(BUFFER,placa);
 		bzero(buff,MAX);
 
         if (repite == 1)
         {
     		if(strcmp(estado, "s") == 0){
-
+                /*Si quiere salir un carro pero no hay nadie en el estacionamiento*/
     			if(NUM==0){
-                    bzero(BUFFER,1024);
+                    bzero(BUFFER,sizeof(BUFFER));
                     strcpy(BUFFER, "NO PUEDES SALIR. EL ESTACIONAMIENTO ESTA VACIO :($");
                     strcat(BUFFER, bytes);
     				sendto(sockfd,BUFFER,sizeof(BUFFER),0,(SA *)&cli,clen);
     			}else{
+                    /*Si hay carros en el estacionamiento, verifica que la placa este
+                    dentro de los carros ingresados, de ser asi lo elimina del estacionamiento
+                    y calcula el precio a cobrar.De lo contrario no hace la salida, pues no esta 
+                    dentro del estacionamiento*/
     			    if((salida = fopen(S,"a")) == NULL){
-    			      printf("Error archivo para salidas no existe!");
+    			      printf("Error en abrir el archivo de salida");
     			      exit(1);
     			    }
-    				NUM--;
                     pos = eliminar_vehiculo(placa);
                     if (pos != -1)
-                    {
+                    {   
+                        NUM--;
                         segundos = difftime(now, PUESTOS[pos].llegada);
                         horas = (int) segundos/3600;
                         if (horas > 0)
@@ -192,10 +166,10 @@ void escuchar(int sockfd, char *E, char *S)
                         sprintf(monto_str, "%d", monto);
                         strcat(BUFFER, " Total a Pagar: ");
                         strcat(BUFFER, monto_str);
+                        printf("SALIDA: %s\n", BUFFER);
                         strcat(BUFFER, "$");
                         strcat(BUFFER, bytes);
         				sendto(sockfd,BUFFER,sizeof(BUFFER),0,(SA *)&cli,clen);
-        				printf("SALIDA: %s\n", BUFFER);
         				fprintf(salida,"\nPlaca: %s\nID: %d\nFecha y Hora de Llegada: %s\nFecha y Hora de Salida: %s\nTotal a Pagar: Bs. %d\n",
                                 PUESTOS[pos].placa, PUESTOS[pos].identificador, PUESTOS[pos].llegada_str, HOUR, monto);
         				fclose(salida);
@@ -210,21 +184,23 @@ void escuchar(int sockfd, char *E, char *S)
     			}
     		}
             else
-            {
+            {   /*Si quiere entrar debe de haber menos de 200 carros, de ser asi 
+                verifica si esa placa ingresada esta dentro del estacionamiento, de lo contrario
+                lo ingresa ocupando un lugar en el mismo. */
+
     			if(NUM<200){
-                    NUM++;
     				entrada = fopen(E,"a");
     			    if(entrada == NULL){
-    			      printf("Error archivo para entradas no existe!");
+    			      printf("No se pudo abrir el archivo de entrada");
     			      exit(1);
     			    }
                     pos = agregar_vehiculo(placa, now, HOUR);
                     if (pos != -1)
-                    {
+                    {   NUM++;
+                        printf("ENTRADA: %s\n", BUFFER);
                         strcat(BUFFER, "$");
                         strcat(BUFFER, bytes);
                         sendto(sockfd,BUFFER,sizeof(BUFFER),0,(SA *)&cli,clen);
-                        printf("NUEVO CLIENTE: %s\n", BUFFER);
                         fprintf(entrada,"\nPlaca: %s\nID: %d\nFecha y Hora de Llegada: %s\n",
                                 PUESTOS[pos].placa, PUESTOS[pos].identificador, HOUR);
                         fclose(entrada);
@@ -260,7 +236,11 @@ void escuchar(int sockfd, char *E, char *S)
 	}
 }
 
-
+/*-----------------------------------------------------------------------*/
+/*                                                                       */
+/*                        FUNCION PRINCIPAL                              */
+/*                                                                       */
+/*-----------------------------------------------------------------------*/
 int main(int argc,char *argv[])
 {
     char E[20];
@@ -331,8 +311,6 @@ int main(int argc,char *argv[])
     	printf("Fallo en la creación del Socket...\n");
     	exit(0);
 	}
-	else printf("Socket creado satisfactoriamente!\n");
-
 	bzero(&servaddr,sizeof(servaddr));
 	servaddr.sin_family=AF_INET;
 	servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -344,7 +322,8 @@ int main(int argc,char *argv[])
     	printf("Fallo en el enlace del Socket...\n");
     	exit(0);
 	}
-	else printf("Socket enlazado exitósamente!\n");
+	else printf("Conectado\n");
+        //printf("Socket enlazado exitósamente!\n");
 
 	escuchar(sockfd, E,S);
 	close(sockfd);
