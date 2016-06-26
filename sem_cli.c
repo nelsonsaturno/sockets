@@ -120,7 +120,6 @@ int main(int argc,char *argv[])
     strcpy(buff, ID);
     strcat(buff," ");
     strcat(buff, MODE);
-    printf("%s\n",buff);
     for (j = 0; j < 3; j++)
     {
         printf("\n");
