@@ -5,7 +5,7 @@
     /                                                       /
     /                                                       /
     /       Lab. Redes en Computacion                       /
-    /       Prof.Kitty Alvarez.                             /
+    /       Prof.Kity Alvarez.                              /
     /                                                       /
     /*******************************************************/
 
@@ -19,28 +19,28 @@ ESTACIONAMIENTO MORIAH
     Se quiere diseñar un sistema informático basado en el paradigma Cliente/Servidor que permita automatizar y controlar dicho estacionamiento.
 
 Incluye:
-    Un computador central (MoriahServer.c) que va a controlar el sistema completo  junto a los equipos de las puertas (MoriahClient.c) que permiten el acceso o salida de vehículos. Este programa se trabajara con Socket UDP y se implemento metodos de seguridad que garantiza la entrega y perdida de informacion.
+    Un computador central (sem_svr.c) que va a controlar el sistema completo  junto a los equipos de las puertas (sem_cli.c) que permiten el acceso o salida de vehículos. Este programa se trabajara con Socket UDP y se implementaron metodos de seguridad que garantizan la entrega de informacion y en caso de que haya perdida o duplicados de la data, se volvera a realizar el envio de informacion.
 
 
 ARCHIVOS DEL PROGRAMA:
 
--MoriahServer.c
+-sem_svr.c
 Contiene todo lo relacionado al Sistema Central, como comprobacion del carro al entrar, al salir y el monto a pagar. Este siempre debe estar en ejecucion y a la espera de un nuevo auto a entrar.
--MoriahClient.c
+-sem_cli.c
 Contiene todo lo relacionado a los subsitemas del Sistema Central(Las puertas). Esta se iniciara solo cuando un carro vaya a entrar. Conecta con el servidor mediante un puerto y una direccion IP
 -header.h
-Contiene algunas variables utilizadas en ambos codigos MoriahClient y MoriahServer y una estructura del lenguaje C para guardar informacion de cada carro.
--Makefile.
-El compilador de los archivos anteriores.
+Contiene algunas variables utilizadas en ambos codigos sem_cli y sem_svr y una estructura del lenguaje C para guardar informacion de cada carro.
+-makefile.
+El compilador de los archivos anteriores y ademas al ejecutar el comando "make clean" se borran los archivos .o.
 
 FUNCIONAMIENTO
 
 
-1. En la carpeta Moriah ejecute el comando 'make' en la consola. Se creara el ejecutador del sevirdor y del cliente con los nombres sem_svr y sem_cli respectivamente.
+1. En la carpeta donde se encuentra el proyecto ejecute el comando 'make clean' en la consola para limpiar el directorio y luego ejecute el comando "make". Se creara el ejecutador del sevirdor y del cliente con los nombres sem_svr y sem_cli respectivamente.
 2. Una vez que haga el primer paso, podra ejecurtar el servidor mediante:
 
 
- ./sem_svr -l <puerto_sem_svr> -i <bitácora_entrada> - o <bitácora_salida>
+ ./sem_svr -l <puerto_sem_svr> -i <bitácora_entrada> -o <bitácora_salida>
 
 
     Dónde:
@@ -48,10 +48,10 @@ FUNCIONAMIENTO
 Es el número de puerto local en que el computador central ofrecerá el servicio
 UNICOS PUERTOS DISPONIBLES: 21147 Y 20797
 
-    <bitácora_entrada> Es el nombre en formato de texto (.txt) de la direccion relativa o absoluta donde se almacena las operaciones de entrada al estacionamiento.
+    <bitácora_entrada> Es el nombre de la direccion relativa o absoluta donde se almacena las operaciones de entrada al estacionamiento.
 MAX. CARACTERES: 20.
 
-    <bitácora_salida> Es el nombre en formato de texto (.txt) de la direccion relativa o absoluta donde se almacena las operaciones de salida al estacionamiento.
+    <bitácora_salida> Es el nombre de la direccion relativa o absoluta donde se almacena las operaciones de salida al estacionamiento.
 MAX. CARACTERES: 20
 
 

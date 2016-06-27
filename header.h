@@ -1,5 +1,5 @@
 /*
-    Archivo: sem_svr.c
+    Archivo: header.h
     Proyecto: Estacionamiento Centro Comercial Moriah
     Integrantes:
         Maria Bracamonte    10-11147
