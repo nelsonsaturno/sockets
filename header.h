@@ -14,7 +14,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/types.h>
 #include <math.h>
+#include <unistd.h> 
 
 // Constantes
 #define MAX 80
