@@ -34,8 +34,8 @@ int main(int argc,char *argv[])
      */
     if(argc!=9)
     {
-        perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-        exit(0);
+        perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+        exit(1);
     }
     else
     {
@@ -44,8 +44,8 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (prt == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-                    exit(0);
+                    perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    exit(1);
                 }
                 PORT=atoi(argv[i+1]);
                 if (PORT != PORT1)
@@ -53,7 +53,7 @@ int main(int argc,char *argv[])
                     if (PORT != PORT2)
                     {
                         printf("Solo se disponen de los puertos: %d y %d\n", PORT1, PORT2);
-                        exit(0);
+                        exit(1);
                     }
                 }
                 prt = 1;
@@ -62,8 +62,8 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (host == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-                    exit(0);
+                    perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    exit(1);
                 }
                 if ((he=gethostbyname(argv[i+1])) == NULL) {
                     perror("Error obteniendo el host a travez del nombre.");
@@ -75,8 +75,8 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (mod == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-                    exit(0);
+                    perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    exit(1);
                 }
                 strcpy(MODE,argv[i+1]);
                 mod = 1;
@@ -85,16 +85,16 @@ int main(int argc,char *argv[])
                 // Verificacion para que no se escriba dos veces el mismo flag
                 if (plac == 1)
                 {
-                    perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-                    exit(0);
+                    perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                    exit(1);
                 }
                 strcpy(ID,argv[i+1]);
                 plac = 1;
             }
             else
             {
-                perror("Sintaxis: ./Cliente -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
-                exit(0);
+                perror("Sintaxis: ./sem_cli -d <IP> -p <Puerto> -c <entrada/salida> -i <ID> ");
+                exit(1);
             }
 
         }
@@ -103,7 +103,7 @@ int main(int argc,char *argv[])
     if((sockfd = socket(AF_INET,SOCK_DGRAM,0)) ==-1)
     {
         perror("Fallo en la creación del Socket...\n");
-        exit(0);
+        exit(1);
     }
 
     wait_time.tv_sec = MAXWAIT;
@@ -136,6 +136,19 @@ int main(int argc,char *argv[])
         bzero(buff,sizeof(buff));
         if ((recibido = recvfrom(sockfd,buff,sizeof(buff),0,(SA *)&servaddr,&len)) > 0)
         {
+            /*
+                El servidor nos envia en su mensaje el numero de bytes que el recibio.
+                Ahora extraemos de ese mensaje ese numero y lo comparamos con la cantidad de
+                bytes que enviamos del lado del cliente.
+
+                Si la cantidad recibida por el servidor es menor a la enviada, entonces
+                hubo perdida de data durante la comunicacion y en caso de que la cantidad
+                recibida por el servidor sea mayor entonces asumimos que hubo duplicados.
+                Para estos dos casos volvemos a intentar la comunicacion.
+
+                En el caso en que ambas cantidades sean iguales entonces se completo
+                la comunicacion satisfactoriamente.
+            */
             strcpy(copy_buff, buff);
             strcpy(resto_buff, strtok(copy_buff, "$"));
 

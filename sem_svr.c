@@ -102,6 +102,7 @@ void escuchar(int sockfd, char *E, char *S)
 	for(;;)
 	{
 		bzero(buff,MAX);
+        // Se recibe el mensaje a traves del socket
 		recibido = recvfrom(sockfd,buff,sizeof(buff),0,(SA *)&cli,&clen);
         if (recibido > 0)
         {
@@ -194,6 +195,13 @@ void escuchar(int sockfd, char *E, char *S)
     			      printf("No se pudo abrir el archivo de entrada");
     			      exit(1);
     			    }
+                    /*
+                        Si la funcion agregar_vehiculo devuelve -1 entonces
+                        es porque el vehiculo que esta ingresando ya esta ocupando
+                        un puesto dentro del estacionamiento, de lo contrario
+                        devuelve la posicion que se le asigno dentro del estacionamiento,
+                        es decir, la posicion en PUESTOS[n]
+                    */
                     pos = agregar_vehiculo(placa, now, HOUR);
                     if (pos != -1)
                     {   NUM++;
@@ -254,7 +262,7 @@ int main(int argc,char *argv[])
 	if(argc!=7)
     {
         perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt> -o <Salida.txt> ");
-        exit(0);
+        exit(1);
     }
     else{
     	for (i = 1; i < argc - 1 ; i = i + 2){
@@ -263,7 +271,7 @@ int main(int argc,char *argv[])
                 if (prt == 1)
                 {
                     perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
-                    exit(0);
+                    exit(1);
                 }
     			PORT=atoi(argv[i+1]);
                 if (PORT != PORT1)
@@ -271,7 +279,7 @@ int main(int argc,char *argv[])
                     if (PORT != PORT2)
                     {
                         printf("Solo se disponen de los puertos: %d y %d\n", PORT1, PORT2);
-                        exit(0);
+                        exit(1);
                     }
                 }
                 prt = 1;
@@ -281,7 +289,7 @@ int main(int argc,char *argv[])
                 if (fent == 1)
                 {
                     perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
-                    exit(0);
+                    exit(1);
                 }
     			strcpy(E,argv[i+1]);
                 fent = 1;
@@ -291,19 +299,19 @@ int main(int argc,char *argv[])
                 if (fsal == 1)
                 {
                     perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
-                    exit(0);
+                    exit(1);
                 }
     			strcpy(S,argv[i+1]);
                 fsal = 1;
     		}
     		else {
                 perror("Sintaxis: ./sem_svr -l <puerto> -i <Entrada.txt>  -o <Salida.txt> ");
-                exit(0);
+                exit(1);
        		}
             if (strcmp(E,S) == 0)
             {
                 perror("Los archivos de entrada y salida no pueden llamarse igual");
-                exit(0);
+                exit(1);
             }
     	}
     }
@@ -314,7 +322,7 @@ int main(int argc,char *argv[])
 	if((sockfd = socket(AF_INET,SOCK_DGRAM,0)) == -1)
 	{
     	printf("Fallo en la creación del Socket...\n");
-    	exit(0);
+    	exit(1);
 	}
 	bzero(&servaddr,sizeof(servaddr));
 	servaddr.sin_family=AF_INET;
@@ -325,7 +333,7 @@ int main(int argc,char *argv[])
 	{
         close(sockfd); //cerramos el socket antes de salir
     	printf("Fallo en el enlace del Socket...\n");
-    	exit(0);
+    	exit(1);
 	}
 	else printf("Conectado\n");
         //printf("Socket enlazado exitósamente!\n");
