@@ -5,6 +5,17 @@
         Maria Bracamonte    10-11147
         Nelson Saturno      09-10797
 */
+#include <stdio.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/types.h>
+#include <math.h>
+#include <unistd.h> 
 
 #define PUERTO "-l"
 #define ENTR "-i"
