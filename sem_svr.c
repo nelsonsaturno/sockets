@@ -138,7 +138,7 @@ void escuchar(int sockfd, char *E, char *S)
                 /*Si quiere salir un carro pero no hay nadie en el estacionamiento*/
     			if(NUM==0){
                     bzero(BUFFER,sizeof(BUFFER));
-                    strcpy(BUFFER, "NO PUEDES SALIR. EL ESTACIONAMIENTO ESTA VACIO :($");
+                    strcpy(BUFFER, "Tu carro no se encuentra dentro del estacionamiento$");
                     strcat(BUFFER, bytes);
     				sendto(sockfd,BUFFER,sizeof(BUFFER),0,(SA *)&cli,clen);
     			}else{
